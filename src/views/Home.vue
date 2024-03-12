@@ -58,11 +58,38 @@
         </div>
         <!-- END Contract Address Input -->
 
+        <!-- Select contract type -->
+        <div class="dropdown-center mt-4 d-grid gap-2">
+          <button 
+            v-if="isActivated" 
+            class="btn btn-dark dropdown-toggle" 
+            type="button" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false"
+          >
+            {{ selectedContractName }}
+          </button>
+          
+          <div class="dropdown-menu p-2">
+            <div class="mb-3">
+              <li><h6 class="dropdown-header">Minted Posts</h6></li>
+              <li><button @click="selectedContractName='IggyPostMinter'" class="dropdown-item">Post Minter (IggyPostMinter)</button></li>
+              <li><button @click="selectedContractName='IggyPostNft1155'" class="dropdown-item">Post NFT (IggyPostNft1155)</button></li>
+              <li><hr class="dropdown-divider"></li>
+
+              <li><h6 class="dropdown-header">NFT Launchpad</h6></li>
+              <li><button @click="selectedContractName='IggyLaunchpad721Bonding'" class="dropdown-item">NFT Launchpad (IggyLaunchpad721Bonding)</button></li>
+              <li><button @click="selectedContractName='NftDirectory'" class="dropdown-item">NFT Directory (NftDirectory)</button></li>
+            </div>
+          </div>
+        </div>
+        <!-- END Select contract type -->
+
         <!-- Load button -->
         <button
           v-if="isActivated && !showSwitchChain"
           class="btn btn-lg btn-dark mt-4 mb-2"
-          :disabled="waitingData"
+          :disabled="waitingData || !isContractSelected"
           @click="loadData"
         >
           <span v-if="waitingData" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -73,7 +100,7 @@
         <!-- Copy URL button -->
         <button
           v-if="isActivated && !showSwitchChain && getContractUrl && contractAddress && isCurrentUserManager"
-          class="btn btn-lg btn-outline-light mt-4 mb-2 ms-2"
+          class="btn btn-lg btn-outline-dark mt-4 mb-2 ms-2"
           @click="copyUrl"
         >
           Copy URL
@@ -101,7 +128,7 @@
         </button>
         <!-- END Connect wallet button -->
 
-        <div v-if="isCurrentUserManager || isCurrentUserOwner">
+        <div v-if="isCurrentUserManager">
           <hr />
 
           <p v-if="isCurrentUserManager && !isCurrentUserOwner">You are a manager of this smart contract.</p>
@@ -112,9 +139,11 @@
     </div>
   </div>
 
+  <component :is="contractComponent" />
+
   <!-- Managers list -->
   <ManagersList 
-    v-if="contractAddress && (managers.length > 0 || isCurrentUserOwner)" 
+    v-if="managersSupported && contractAddress && (managers.length > 0 || isCurrentUserOwner)" 
     :key="managers.length" 
     :managers="managers" 
     :isCurrentUserOwner="isCurrentUserOwner" 
@@ -130,6 +159,13 @@
 import Info from "../components/Info.vue";
 import ManagersList from "../components/ManagersList.vue";
 import WaitingToast from "../components/WaitingToast.vue";
+
+import IggyPostMinter from "../components/minted-posts/IggyPostMinter.vue";
+import IggyPostNft1155 from "../components/minted-posts/IggyPostNft1155.vue";
+
+import IggyLaunchpad721Bonding from "../components/nft-launchpad/IggyLaunchpad721Bonding.vue";
+import NftDirectory from "../components/nft-launchpad/NftDirectory.vue";
+
 import useChainHelpers from "../composables/useChainHelpers";
 import useDomainHelpers from "../composables/useDomainHelpers";
 import { ethers } from 'ethers';
@@ -141,24 +177,31 @@ export default {
 
   data() {
     return {
+      contractAddress: null,
       contractAddrOrDomain: null,
+      contractComponent: null,
       isCurrentUserManager: false,
       isCurrentUserOwner: false,
       filterNetwork: null,
-      contractAddress: null,
       managers: [],
+      managersSupported: true,
+      selectedContractName: "Select contract type",
       urlChain: null,
       waitingData: false
     }
   },
 
   components: {
+    IggyLaunchpad721Bonding,
+    IggyPostMinter,
+    IggyPostNft1155,
     Info,
     ManagersList,
+    NftDirectory,
     WaitingToast
   },
 
-  created() {
+  mounted() {
     // pass contract address through URL query (e.g. ?addr=0x123...abc, or ?id=0x123...abc)
     if (this.$route.query.addr) {
       this.contractAddrOrDomain = this.$route.query.addr;
@@ -170,13 +213,17 @@ export default {
       this.urlChain = this.$route.query.chain;
       this.urlChainName = this.getChainName(Number(this.urlChain));
     }
+
+    if (this.$route.query.contract) {
+      this.selectedContractName = this.$route.query.contract;
+    }
   },
 
   computed: {
 
     getContractUrl() {
       if (this.contractAddress && this.chainId) {
-        return window.location.origin + "/?addr=" + this.contractAddress + "&chain=" + this.chainId;
+        return window.location.origin + "/?addr=" + this.contractAddress + "&chain=" + this.chainId + "&contract=" + this.selectedContractName;
       }
 
       return null;
@@ -190,6 +237,10 @@ export default {
       }
 
       return networkNames;
+    },
+
+    isContractSelected() {
+      return (this.selectedContractName !== "Select contract type") && this.contractAddrOrDomain;
     },
 
     showSwitchChain() {
@@ -243,6 +294,8 @@ export default {
           "function getManagers() external view returns (address[] memory)"
         ]);
 
+        console.log("load data")
+
         // contract instance
         const contract = new ethers.Contract(this.contractAddress, contractInterface, this.signer);
 
@@ -250,9 +303,18 @@ export default {
         const owner = await contract.owner();
         this.isCurrentUserOwner = String(owner).toLowerCase() === String(this.address).toLowerCase();
 
+        console.log("isCurrentUserOwner", this.isCurrentUserOwner);
+
         // if current user is not owner, check if current user is manager
         if (!this.isCurrentUserOwner) {
-          this.isCurrentUserManager = await contract.isManager(this.address);
+          try {
+            this.isCurrentUserManager = await contract.isManager(this.address);
+          } catch (error) {
+            console.log(error);
+            this.toast("You are not the owsner and this contract does not support OwnableWithManagers.", {type: TYPE.ERROR});
+            this.waitingData = false;
+            return;
+          }
         } else {
           // if current user is owner, also mark it as manager
           this.isCurrentUserManager = true;
@@ -265,14 +327,21 @@ export default {
         }
 
         // get managers
-        const managers = await contract.getManagers();
+        try {
+          const managers = await contract.getManagers();
 
-        // parse managers
-        for (let i = 0; i < managers.length; i++) {
-          this.managers.push({
-            address: managers[i]
-          });
+          // parse managers
+          for (let i = 0; i < managers.length; i++) {
+            this.managers.push({
+              address: managers[i]
+            });
+          }
+        } catch (error) {
+          // This contract does not support OwnableWithManagers
+          this.managersSupported = false;
         }
+
+        this.contractComponent = this.selectedContractName;
 
         this.waitingData = false;
       } catch (error) {

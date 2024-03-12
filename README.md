@@ -2,6 +2,10 @@
 
 This is a dashboard for chat admins & managers to easily change parameters in their respective chat smart contracts.
 
+## URL
+
+Example: `http://localhost:5173/?addr=0xc2C543D39426bfd1dB66bBde2Dd9E4a5c7212876&chain=8453&contract=NftDirectory`
+
 ## Features
 - [Vue 3](https://v3.vuejs.org/guide/introduction.html#what-is-vue-js) as the foundation
 - [Bootstrap](https://getbootstrap.com/) for styling
