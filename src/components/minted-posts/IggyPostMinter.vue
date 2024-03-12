@@ -1,24 +1,16 @@
 <template>
-  <div class="d-flex justify-content-center">
-    <div class="card text-white bg-secondary default-card">
-      <div class="card-body">
-        <div class="text-center">
-          <button class="btn btn-secondary text-uppercase mb-3">
-            Post Minter
-          </button>
-        </div>
-
-        <p class="text-center">
-          Component text
-        </p>
-
-      </div>
-    </div>
-  </div>
+  <IggyPostMinterChangeDaoFee :contractAddress="contractAddress" />
 </template>
 
 <script>
+import IggyPostMinterChangeDaoFee from "./post-minter/ChangeDaoFee.vue"
+
 export default {
   name: "IggyPostMinter",
+  props: ['contractAddress'],
+
+  components: {
+    IggyPostMinterChangeDaoFee
+  }
 }
 </script>

@@ -20,5 +20,6 @@
 <script>
 export default {
   name: "IggyLaunchpad721Bonding",
+  props: ['contractAddress'],
 }
 </script>

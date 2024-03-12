@@ -139,7 +139,7 @@
     </div>
   </div>
 
-  <component :is="contractComponent" />
+  <component :is="contractComponent" :contractAddress="contractAddress" />
 
   <!-- Managers list -->
   <ManagersList 
@@ -294,16 +294,12 @@ export default {
           "function getManagers() external view returns (address[] memory)"
         ]);
 
-        console.log("load data")
-
         // contract instance
         const contract = new ethers.Contract(this.contractAddress, contractInterface, this.signer);
 
         // check if current user is owner
         const owner = await contract.owner();
         this.isCurrentUserOwner = String(owner).toLowerCase() === String(this.address).toLowerCase();
-
-        console.log("isCurrentUserOwner", this.isCurrentUserOwner);
 
         // if current user is not owner, check if current user is manager
         if (!this.isCurrentUserOwner) {

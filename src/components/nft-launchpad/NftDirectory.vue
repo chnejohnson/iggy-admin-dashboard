@@ -20,5 +20,6 @@
 <script>
 export default {
   name: "NftDirectory",
+  props: ['contractAddress'],
 }
 </script>

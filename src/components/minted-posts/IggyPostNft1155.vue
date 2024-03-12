@@ -20,5 +20,6 @@
 <script>
 export default {
   name: "IggyPostNft1155",
+  props: ['contractAddress'],
 }
 </script>
