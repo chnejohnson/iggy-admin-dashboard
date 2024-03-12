@@ -1,0 +1,15 @@
+{
+	"short_name": "iggy-admin-dashboard",
+	"name": "Iggy Admin/Manager Dashboard",
+	"description": "Admin/Manager dashboard for Iggy-based chats and social networks.",
+	"icons": [
+		{
+			"src": "favicon.svg",
+			"sizes": "48x48"
+		}
+	],
+	"start_url": ".",
+	"display": "standalone",
+	"theme_color": "#ff007a",
+	"background_color": "#fff"
+}
