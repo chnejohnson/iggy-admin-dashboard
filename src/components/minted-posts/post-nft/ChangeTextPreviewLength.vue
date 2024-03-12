@@ -4,25 +4,25 @@
       <div class="card-body">
         <div class="text-center">
           <button class="btn btn-secondary text-uppercase mb-3">
-            Change DAO fee
+            Change text preview length
           </button>
         </div>
 
         <p class="text-center">
-          Current fee: {{ currentFeePercentage }}%
+          Current length: {{ currentLength }} characters
         </p>
 
         <div class="row">
           <div class="col-md-6 offset-md-3">
             <div class="input-group mb-3">
-              <input type="text" class="form-control border border-white" v-model="newFeePercentage">
-              <span class="input-group-text bg-primary">%</span>
+              <input type="text" class="form-control border border-white" v-model="newLength">
+              <span class="input-group-text bg-primary">characters</span>
             </div>
           </div>
         </div>
 
         <div class="text-center">
-          <button @click="submit" class="btn btn-primary" :disabled="waiting || !newFeePercentage">
+          <button @click="submit" class="btn btn-primary" :disabled="waiting || !newLength">
             <span v-if="waiting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             Submit
           </button>
@@ -42,14 +42,14 @@ import WaitingToast from "../../WaitingToast.vue";
 import useChainHelpers from "../../../composables/useChainHelpers";
 
 export default {
-  name: "IggyPostMinterChangeDaoFee",
+  name: "IggyPostNftChangeTextPreviewLength",
   props: ['contractAddress'],
 
   data() {
     return {
-      currentFeeBips: 0,
-      newFeePercentage: 0,
-      successMessage: "You have successfully changed the DAO fee!",
+      currentLength: 0,
+      newLength: 0,
+      successMessage: "You have successfully changed the post text preview length!",
       waiting: false
     }
   },
@@ -58,30 +58,24 @@ export default {
     this.loadData();
   },
 
-  computed: {
-    currentFeePercentage() {
-      return this.currentFeeBips / 100;
-    }
-  },
-
   methods: {
     async loadData() {
       this.waiting = true;
 
       // interface of the contract
       const contractInterface = new ethers.utils.Interface([
-        "function daoFee() external view returns (uint256)"
+        "function maxTextPreviewLength() external view returns (uint256)"
       ]);
 
       // contract instance
       const contract = new ethers.Contract(this.contractAddress, contractInterface, this.signer);
 
       try {
-        this.currentFeeBips = await contract.daoFee();
+        this.currentLength = await contract.maxTextPreviewLength();
       } catch (e) {
         this.toast({
           title: "Error",
-          message: "Failed to load DAO fee",
+          message: "Failed to load text preview length",
           type: TYPE.ERROR
         });
       }
@@ -92,17 +86,15 @@ export default {
     async submit() {
       this.waiting = true;
 
-      const newFeeBips = Number(this.newFeePercentage) * 100;
-
       const contractInterface = new ethers.utils.Interface([
-        "function changeDaoFee(uint256 _daoFee) external"
+        "function ownerChangeMaxTextPreviewLength(uint256 _newMaxTextPreviewLength)"
       ]);
 
       const contract = new ethers.Contract(this.contractAddress, contractInterface, this.signer);
 
       try {
-        const tx = await contract.changeDaoFee(
-          newFeeBips
+        const tx = await contract.ownerChangeMaxTextPreviewLength(
+          this.newLength
         );
         
         const toastWait = this.toast(
@@ -128,7 +120,7 @@ export default {
           });
 
           // TODO: add custom actions after successful transaction (if needed)
-          this.currentFeeBips = newFeeBips;
+          this.currentLength = this.newLength;
 
           this.waiting = false;
 

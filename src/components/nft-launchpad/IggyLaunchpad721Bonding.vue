@@ -21,5 +21,14 @@
 export default {
   name: "IggyLaunchpad721Bonding",
   props: ['contractAddress'],
+
+  /* 
+  Contract code: https://github.com/iggy-social/iggy-contracts/blob/main/contracts/launchpad/erc721/IggyLaunchpad721Bonding.sol
+
+  TODO:
+  - setPrice
+  - setStatsAddress
+  - setMaxNftNameLength
+  */
 }
 </script>

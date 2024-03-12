@@ -4,7 +4,7 @@
       <div class="card-body">
         <div class="text-center">
           <button class="btn btn-secondary text-uppercase mb-3">
-            Change DAO fee
+            Change referrer's fee
           </button>
         </div>
 
@@ -42,14 +42,14 @@ import WaitingToast from "../../WaitingToast.vue";
 import useChainHelpers from "../../../composables/useChainHelpers";
 
 export default {
-  name: "IggyPostMinterChangeDaoFee",
+  name: "IggyPostMinterChangeReferrerFee",
   props: ['contractAddress'],
 
   data() {
     return {
       currentFeeBips: 0,
       newFeePercentage: 0,
-      successMessage: "You have successfully changed the DAO fee!",
+      successMessage: "You have successfully changed the referrer's fee!",
       waiting: false
     }
   },
@@ -70,18 +70,18 @@ export default {
 
       // interface of the contract
       const contractInterface = new ethers.utils.Interface([
-        "function daoFee() external view returns (uint256)"
+        "function referrerFee() external view returns (uint256)"
       ]);
 
       // contract instance
       const contract = new ethers.Contract(this.contractAddress, contractInterface, this.signer);
 
       try {
-        this.currentFeeBips = await contract.daoFee();
+        this.currentFeeBips = await contract.referrerFee();
       } catch (e) {
         this.toast({
           title: "Error",
-          message: "Failed to load DAO fee",
+          message: "Failed to load referrer's fee",
           type: TYPE.ERROR
         });
       }
@@ -95,13 +95,13 @@ export default {
       const newFeeBips = Number(this.newFeePercentage) * 100;
 
       const contractInterface = new ethers.utils.Interface([
-        "function changeDaoFee(uint256 _daoFee) external"
+        "function changeReferrerFee(uint256 _fee) external"
       ]);
 
       const contract = new ethers.Contract(this.contractAddress, contractInterface, this.signer);
 
       try {
-        const tx = await contract.changeDaoFee(
+        const tx = await contract.changeReferrerFee(
           newFeeBips
         );
         
