@@ -6,12 +6,15 @@
 					<button class="btn btn-secondary text-uppercase mb-3">Change Stats Address</button>
 				</div>
 
-				<p class="text-center">Current address: {{ currentAddress }}</p>
+				<p class="text-center">
+					<span class="me-1">Current address: {{ currentAddress }} </span>
+					<a :href="getAddressBlockExplorerUrl" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a>
+				</p>
 
 				<div class="row">
 					<div class="col-md-6 offset-md-3">
 						<div class="input-group mb-3">
-							<input type="text" class="form-control border border-white" v-model="newAddress" />
+							<input type="text" class="form-control border border-white" v-model="newAddress" placeholder="Enter new stats address" />
 						</div>
 					</div>
 				</div>
@@ -57,6 +60,12 @@ export default {
 		this.loadData()
 	},
 
+	computed: {
+		getAddressBlockExplorerUrl() {
+			return this.getBlockExplorerBaseUrl(this.chainId) + '/address/' + this.currentAddress + "#code"
+		},
+	},
+
 	methods: {
 		async loadData() {
 			this.waiting = true
@@ -87,7 +96,12 @@ export default {
 
 			const newAddress = this.newAddress
 
-			console.log('newAddress', newAddress)
+			// if not valid address, throw error via toast
+			if (!ethers.utils.isAddress(newAddress)) {
+				this.toast('Invalid address', { type: TYPE.ERROR })
+				this.waiting = false
+				return
+			}
 
 			const contractInterface = new ethers.utils.Interface([
 				'function changeStatsAddress(address _statsAddress) external',
