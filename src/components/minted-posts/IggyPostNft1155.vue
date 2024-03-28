@@ -1,19 +1,28 @@
 <template>
-  <IggyPostNftChangeTextPreviewLength :contractAddress="contractAddress" />
+	<IggyPostNftChangeTextPreviewLength :contractAddress="contractAddress" />
+	<IggyPostNftChangeDefaultPrice :contractAddress="contractAddress" />
+	<!-- <IggyPostNftChangeTextPreview :contractAddress="contractAddress" /> -->
+	<!-- <IggyPostNftChangeImage :contractAddress="contractAddress" /> -->
 </template>
 
 <script>
-import IggyPostNftChangeTextPreviewLength from "./post-nft/ChangeTextPreviewLength.vue"
+import IggyPostNftChangeTextPreviewLength from './post-nft/ChangeTextPreviewLength.vue'
+import IggyPostNftChangeDefaultPrice from './post-nft/ChangeDefaultPrice.vue'
+import IggyPostNftChangeTextPreview from './post-nft/ChangeTextPreview.vue'
+import IggyPostNftChangeImage from './post-nft/ChangeImage.vue'
 
 export default {
-  name: "IggyPostNft1155",
-  props: ['contractAddress'],
+	name: 'IggyPostNft1155',
+	props: ['contractAddress'],
 
-  components: {
-    IggyPostNftChangeTextPreviewLength
-  }
+	components: {
+		IggyPostNftChangeTextPreviewLength,
+		IggyPostNftChangeDefaultPrice,
+		IggyPostNftChangeTextPreview,
+		IggyPostNftChangeImage,
+	},
 
-  /* 
+	/* 
   Contract code: https://github.com/iggy-social/iggy-contracts/blob/main/contracts/post/IggyPostNft1155.sol
 
   TODO:
