@@ -1,7 +1,7 @@
 <template>
 	<IggyPostNftChangeTextPreviewLength :contractAddress="contractAddress" />
 	<IggyPostNftChangeDefaultPrice :contractAddress="contractAddress" />
-	<!-- <IggyPostNftChangeTextPreview :contractAddress="contractAddress" /> -->
+	<IggyPostNftChangeTextPreview :contractAddress="contractAddress" />
 	<!-- <IggyPostNftChangeImage :contractAddress="contractAddress" /> -->
 </template>
 
