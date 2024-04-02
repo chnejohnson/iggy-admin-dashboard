@@ -85,22 +85,18 @@
 		</div>
 	</div>
 	<!-- END Connect Wallet modal -->
-
-	<ChangeTextPreviewModal />
 </template>
 
 <script>
 import Navbar from './components/Navbar.vue'
 import { MetaMaskConnector, CoinbaseWalletConnector } from 'vue-dapp'
 import { useEthers, useWallet } from 'vue-dapp'
-import ChangeTextPreviewModal from './components/minted-posts/post-nft/ChangeTextPreviewModal.vue'
 
 export default {
 	name: 'App',
 
 	components: {
 		Navbar,
-		ChangeTextPreviewModal,
 	},
 
 	created() {

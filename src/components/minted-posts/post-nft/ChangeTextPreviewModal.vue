@@ -10,21 +10,43 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h1 class="modal-title fs-5" id="changeTextPreviewModalLabel">Change Post Mint Price</h1>
+					<h1 class="modal-title fs-5" id="changeTextPreviewModalLabel">Change Text Preview</h1>
 					<button
-						id="closechangeTextPreviewModal"
+						id="closeChangeTextPreviewModal"
 						type="button"
 						class="btn-close"
 						data-bs-dismiss="modal"
 						aria-label="Close"
 					></button>
 				</div>
-				<div class="modal-body"></div>
+				<div class="modal-body">
+					<p>Token ID: {{ tokenId }}</p>
+					<p>Current Text Preview: {{ textPreview }}</p>
+
+					<p>New Text Preview:</p>
+
+					<div class="row">
+						<div class="col-sm-6 mb-2">
+							<div class="input-group flex-nowrap">
+								<input
+									type="text"
+									class="form-control"
+									v-model="newTextPreview"
+									aria-describedby="addon-wrapping"
+									:disabled="inputDisabled"
+								/>
+							</div>
+						</div>
+						<small>
+							<em> Don't set the text over {{ maxTextPreviewLength }} text preview limit. </em>
+						</small>
+					</div>
+				</div>
 
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 
-					<button type="button" :disabled="loading" class="btn btn-primary" @click="changeDefaultPostPrice">
+					<button type="button" :disabled="loading" class="btn btn-primary" @click="changeTextPreview">
 						<span
 							v-if="loading"
 							class="spinner-border spinner-border-sm mx-1"
@@ -47,20 +69,30 @@ import WaitingToast from '../../WaitingToast.vue'
 
 export default {
 	name: 'ChangeTextPreviewModal',
+	props: ['contractAddress'],
 
 	data() {
 		return {
-			defaultPostPrice: null,
+			textPreview: null,
+			maxTextPreviewLength: null,
+			newTextPreview: '',
 			loading: false,
 			inputDisabled: false,
+
+			// modal open/close
 			isModalOpen: false,
 			observer: null,
-			selectedPostPrice: null,
-			userHasCustomPrice: false,
 		}
 	},
 
+	computed: {
+		tokenId() {
+			return this.$route.query.tokenId
+		},
+	},
+
 	mounted() {
+		// Noted that it mounted when the page is loaded even if the modal is not opened
 		// create observer to watch for modal open/close
 		this.observer = new MutationObserver(mutations => {
 			for (const m of mutations) {
@@ -78,6 +110,27 @@ export default {
 		})
 	},
 
+	watch: {
+		isModalOpen() {
+			if (this.isModalOpen) {
+				// when modal is opened
+				if (!this.tokenId) {
+					// if no tokenId in query, close modal
+					document.getElementById('closeChangeTextPreviewModal').click()
+					throw new Error('Cannot open modal without tokenId in query')
+				}
+
+				this.getTextPreview()
+			} else {
+				// when modal is closed
+				this.$router.push({
+					name: this.$route.name,
+					query: { ...this.$route.query, tokenId: undefined },
+				})
+			}
+		},
+	},
+
 	// Can't be disconnected because the component is always mounted in default.vue
 	beforeUnmount() {
 		this.observer.disconnect()
@@ -85,63 +138,49 @@ export default {
 	},
 
 	methods: {
-		async getDefaultPostPrice() {
+		async getTextPreview() {
 			if (this.isActivated) {
 				this.inputDisabled = true
 
 				try {
-					const iggyPostInterface = new ethers.utils.Interface([
-						'function getAuthorsDefaultPrice(address) public view returns (uint256)',
-						'function defaultPrice() external view returns (uint256)',
+					const iface = new ethers.utils.Interface([
+						'function getPost(uint256) public view returns (uint256,string,address,string,string,uint256)',
+						'function maxTextPreviewLength() public view returns (uint256)',
 					])
 
-					const iggyContract = new ethers.Contract(
-						this.$config.iggyPostAddress,
-						iggyPostInterface,
-						this.signer,
-					)
+					const contract = new ethers.Contract(this.contractAddress, iface, this.signer)
 
-					const userPostPriceWei = await iggyContract.getAuthorsDefaultPrice(this.address)
-					const defaultPostPriceWei = await iggyContract.defaultPrice()
-					this.defaultPostPrice = ethers.utils.formatUnits(defaultPostPriceWei, this.$config.tokenDecimals)
+					const post = await contract.getPost(BigInt(this.tokenId))
+					const maxTextPreviewLength = await contract.maxTextPreviewLength()
 
-					let postPriceWei
-
-					if (userPostPriceWei.isZero()) {
-						postPriceWei = defaultPostPriceWei
-						this.userHasCustomPrice = false
-					} else {
-						postPriceWei = userPostPriceWei
-						this.userHasCustomPrice = true
-					}
-
-					this.selectedPostPrice = ethers.utils.formatUnits(postPriceWei, this.$config.tokenDecimals)
+					this.textPreview = post[3]
+					this.maxTextPreviewLength = Number(maxTextPreviewLength)
+					console.log('getTextPreview', post, maxTextPreviewLength)
 				} catch (err) {
-					console.log('Failed to get default post price: ' + err)
+					console.error('Failed to get text preview' + err)
 				} finally {
 					this.inputDisabled = false
 				}
 			}
 		},
-		async changeDefaultPostPrice() {
+		async changeTextPreview() {
 			this.loading = true
 			this.inputDisabled = true
 
 			if (this.isActivated) {
-				const iggyPostInterface = new ethers.utils.Interface([
-					'function authorSetDefaultPrice(uint256 _price) external',
-				])
-
-				const iggyContract = new ethers.Contract(this.$config.iggyPostAddress, iggyPostInterface, this.signer)
-				const postPriceWei = ethers.utils.parseUnits(this.selectedPostPrice, this.$config.tokenDecimals)
+				// check if the new text preview is over than the max length
+				if (this.newTextPreview.length > this.maxTextPreviewLength) {
+					this.toast('Error: Text preview is too long', { type: 'error' })
+					return
+				}
 
 				try {
-					// feat: cannot set price below 0
-					if (postPriceWei.isNegative()) {
-						this.toast('Error: Cannot set a negative price', { type: 'error' })
-						return
-					}
-					const tx = await iggyContract.authorSetDefaultPrice(postPriceWei)
+					const iface = new ethers.utils.Interface([
+						'function ownerChangeTextPreview(uint256 _tokenId, string memory _newTextPreview)',
+					])
+					const contract = new ethers.Contract(this.contractAddress, iface, this.signer)
+
+					const tx = await contract.ownerChangeTextPreview(this.tokenId, this.newTextPreview)
 
 					const toastWait = this.toast(
 						{
@@ -166,7 +205,7 @@ export default {
 							onClick: () =>
 								window.open(this.$config.blockExplorerBaseUrl + '/tx/' + tx.hash, '_blank').focus(),
 						})
-						document.getElementById('closechangeTextPreviewModal').click()
+						document.getElementById('closeChangeDefaultPostPriceModal').click()
 					} else {
 						this.toast.dismiss(toastWait)
 						this.toast('Transaction has failed.', {
@@ -177,12 +216,11 @@ export default {
 						console.log(receipt)
 					}
 				} catch (e) {
-					console.log('error: ' + e)
+					console.error('error: ' + e)
 					this.toast('Error: ' + e, { type: 'error' })
 					return
 				} finally {
-					// update the price whenever tx is successful or not
-					this.getDefaultPostPrice()
+					this.getTextPreview() // update the value whenever tx is successful or not
 					this.loading = false
 					this.inputDisabled = false
 				}
@@ -203,14 +241,6 @@ export default {
 		const toast = useToast()
 
 		return { address, isActivated, signer, toast }
-	},
-
-	watch: {
-		isModalOpen() {
-			if (this.isModalOpen) {
-				this.getDefaultPostPrice()
-			}
-		},
 	},
 }
 </script>

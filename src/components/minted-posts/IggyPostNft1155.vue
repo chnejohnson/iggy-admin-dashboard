@@ -3,6 +3,8 @@
 	<IggyPostNftChangeDefaultPrice :contractAddress="contractAddress" />
 	<IggyPostNftChangeTextPreview :contractAddress="contractAddress" />
 	<!-- <IggyPostNftChangeImage :contractAddress="contractAddress" /> -->
+
+	<ChangeTextPreviewModal :contractAddress="contractAddress" />
 </template>
 
 <script>
@@ -10,6 +12,8 @@ import IggyPostNftChangeTextPreviewLength from './post-nft/ChangeTextPreviewLeng
 import IggyPostNftChangeDefaultPrice from './post-nft/ChangeDefaultPrice.vue'
 import IggyPostNftChangeTextPreview from './post-nft/ChangeTextPreview.vue'
 import IggyPostNftChangeImage from './post-nft/ChangeImage.vue'
+
+import ChangeTextPreviewModal from './post-nft/ChangeTextPreviewModal.vue'
 
 export default {
 	name: 'IggyPostNft1155',
@@ -20,6 +24,8 @@ export default {
 		IggyPostNftChangeDefaultPrice,
 		IggyPostNftChangeTextPreview,
 		IggyPostNftChangeImage,
+
+		ChangeTextPreviewModal,
 	},
 
 	/* 

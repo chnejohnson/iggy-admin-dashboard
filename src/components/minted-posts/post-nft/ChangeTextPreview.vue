@@ -30,7 +30,12 @@
 				</div>
 
 				<div v-if="isPostLoaded && tokenId" class="text-center">
-					<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changeTextPreviewModal">
+					<button
+						@click="onClickOpenModal"
+						class="btn btn-primary"
+						data-bs-toggle="modal"
+						data-bs-target="#changeTextPreviewModal"
+					>
 						Change text preview
 					</button>
 				</div>
@@ -47,13 +52,15 @@ import { useToast, TYPE } from 'vue-toastification'
 import WaitingToast from '../../WaitingToast.vue'
 import useChainHelpers from '../../../composables/useChainHelpers'
 
+// http://localhost:5173/?addr=0x111C36B5B09D09Ee17bc351d43b91D8fD2A42901&contract=IggyPostNft1155
+
 export default {
 	name: 'IggyPostNftChangeTextPreview',
 	props: ['contractAddress'],
 
 	data() {
 		return {
-			tokenId: null,
+			tokenId: 8, // TODO: remove this
 			waiting: false,
 			post: null,
 		}
@@ -93,6 +100,14 @@ export default {
 			}
 
 			this.waiting = false
+		},
+		onClickOpenModal() {
+			this.$router.push({
+				query: {
+					...this.$route.query,
+					tokenId: this.tokenId,
+				},
+			})
 		},
 	},
 
