@@ -9,11 +9,13 @@
         "contracts": [
           {
             "address": "0xece8B88ee42E7d68160BbC192E125b5F63B32430",
-            "name": "Post Minter"
+            "name": "Post Minter",
+            "type": "IggyPostMinter"
           },
           {
             "address": "0xb5A9c6096a2A5d761337ae29C018218BCfeeEf73",
-            "name": "Post NFT (ERC-1155)"
+            "name": "Post NFT (ERC-1155)",
+            "type": "IggyPostNft1155"
           }
         ]
       },
@@ -22,11 +24,13 @@
         "contracts": [
           {
             "address": "0x4bE1e05BB0527bcbDEcA0e1E72c41e680a126d4b",
-            "name": "NFT Directory"
+            "name": "NFT Directory",
+            "type": "NftDirectory"
           },
           {
             "address": "0x8f603a26a6C286CB55ed9cC07F42fCc02bdE4821",
-            "name": "NFT Launchpad"
+            "name": "NFT Launchpad Bonding",
+            "type": "IggyLaunchpad721Bonding"
           }
         ]
       }
@@ -42,11 +46,13 @@
         "contracts": [
           {
             "address": "0x2393C3CD8Ad690AEB0107079edB959c71a92Dd5E",
-            "name": "Post Minter"
+            "name": "Post Minter",
+            "type": "IggyPostMinter"
           },
           {
             "address": "0x111C36B5B09D09Ee17bc351d43b91D8fD2A42901",
-            "name": "Post NFT (ERC-1155)"
+            "name": "Post NFT (ERC-1155)",
+            "type": "IggyPostNft1155"
           }
         ]
       },
@@ -55,11 +61,13 @@
         "contracts": [
           {
             "address": "0x00F5F433Ff865E76e23cc356E1e3B1065DeF5184",
-            "name": "NFT Directory"
+            "name": "NFT Directory",
+            "type": "NftDirectory"
           },
           {
             "address": "0x61c25B5A12fCa5d9A79C69406DefE0980B93BEf2",
-            "name": "NFT Launchpad"
+            "name": "NFT Launchpad Bonding",
+            "type": "IggyLaunchpad721Bonding"
           }
         ]
       }
