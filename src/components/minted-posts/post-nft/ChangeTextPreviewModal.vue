@@ -46,7 +46,12 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 
-					<button type="button" :disabled="loading" class="btn btn-primary" @click="changeTextPreview">
+					<button
+						type="button"
+						class="btn btn-primary"
+						:disabled="changeTextPreviewDisabled"
+						@click="changeTextPreview"
+					>
 						<span
 							v-if="loading"
 							class="spinner-border spinner-border-sm mx-1"
@@ -89,6 +94,11 @@ export default {
 		tokenId() {
 			return this.$route.query.tokenId
 		},
+		changeTextPreviewDisabled() {
+			if (this.loading) return true
+			if (this.textPreview === this.newTextPreview) return true
+			return false
+		},
 	},
 
 	mounted() {
@@ -115,8 +125,6 @@ export default {
 			if (this.isModalOpen) {
 				// when modal is opened
 				if (!this.tokenId) {
-					// if no tokenId in query, close modal
-					document.getElementById('closeChangeTextPreviewModal').click()
 					throw new Error('Cannot open modal without tokenId in query')
 				}
 
@@ -129,12 +137,6 @@ export default {
 				})
 			}
 		},
-	},
-
-	// Can't be disconnected because the component is always mounted in default.vue
-	beforeUnmount() {
-		this.observer.disconnect()
-		// console.log('observer disconnected')
 	},
 
 	methods: {
@@ -154,10 +156,13 @@ export default {
 					const maxTextPreviewLength = await contract.maxTextPreviewLength()
 
 					this.textPreview = post[3]
+					this.newTextPreview = post[3]
 					this.maxTextPreviewLength = Number(maxTextPreviewLength)
-					console.log('getTextPreview', post, maxTextPreviewLength)
 				} catch (err) {
 					console.error('Failed to get text preview' + err)
+					this.toast('Error: Failed to get text preview', {
+						type: 'error',
+					})
 				} finally {
 					this.inputDisabled = false
 				}
@@ -168,13 +173,12 @@ export default {
 			this.inputDisabled = true
 
 			if (this.isActivated) {
-				// check if the new text preview is over than the max length
-				if (this.newTextPreview.length > this.maxTextPreviewLength) {
-					this.toast('Error: Text preview is too long', { type: 'error' })
-					return
-				}
-
 				try {
+					// check if the new text preview is over than the max length
+					if (this.newTextPreview.length > this.maxTextPreviewLength) {
+						throw new Error('Text preview is too long', { type: 'error' })
+					}
+
 					const iface = new ethers.utils.Interface([
 						'function ownerChangeTextPreview(uint256 _tokenId, string memory _newTextPreview)',
 					])
@@ -205,7 +209,7 @@ export default {
 							onClick: () =>
 								window.open(this.$config.blockExplorerBaseUrl + '/tx/' + tx.hash, '_blank').focus(),
 						})
-						document.getElementById('closeChangeDefaultPostPriceModal').click()
+						document.getElementById('closeChangeTextPreviewModal').click()
 					} else {
 						this.toast.dismiss(toastWait)
 						this.toast('Transaction has failed.', {

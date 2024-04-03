@@ -12,33 +12,31 @@
 					<div class="col-md-6 offset-md-3">
 						<div class="input-group mb-3">
 							<input type="number" class="form-control border border-white" v-model="tokenId" />
-							<!-- <span class="input-group-text bg-primary"></span> -->
 						</div>
 					</div>
 				</div>
 
 				<div class="text-center mb-3">
-					<button @click="loadData" class="btn btn-primary" :disabled="waiting || tokenId === null">
+					<button @click="loadData" class="btn btn-primary" :disabled="!tokenId">
 						<span
 							v-if="waiting"
 							class="spinner-border spinner-border-sm"
 							role="status"
 							aria-hidden="true"
 						></span>
-						Load Data
+						Load Text Preview
 					</button>
+
+					<p v-if="isPostLoaded && !hasPost" class="mt-3">Post not found</p>
 				</div>
 
-				<div v-if="isPostLoaded && tokenId" class="text-center">
-					<button
-						@click="onClickOpenModal"
-						class="btn btn-primary"
-						data-bs-toggle="modal"
-						data-bs-target="#changeTextPreviewModal"
-					>
-						Change text preview
-					</button>
-				</div>
+				<!-- hidden -->
+				<button
+					id="openTextPreviewModal"
+					class="d-none"
+					data-bs-toggle="modal"
+					data-bs-target="#changeTextPreviewModal"
+				></button>
 			</div>
 		</div>
 	</div>
@@ -47,12 +45,11 @@
 <script>
 import { ethers } from 'ethers'
 import { useEthers } from 'vue-dapp'
-import { useToast, TYPE } from 'vue-toastification'
+import { useToast } from 'vue-toastification'
 
-import WaitingToast from '../../WaitingToast.vue'
 import useChainHelpers from '../../../composables/useChainHelpers'
 
-// http://localhost:5173/?addr=0x111C36B5B09D09Ee17bc351d43b91D8fD2A42901&contract=IggyPostNft1155
+// dev link http://localhost:5173/?addr=0x111C36B5B09D09Ee17bc351d43b91D8fD2A42901&contract=IggyPostNft1155
 
 export default {
 	name: 'IggyPostNftChangeTextPreview',
@@ -60,7 +57,7 @@ export default {
 
 	data() {
 		return {
-			tokenId: 8, // TODO: remove this
+			tokenId: null,
 			waiting: false,
 			post: null,
 		}
@@ -71,6 +68,9 @@ export default {
 	computed: {
 		isPostLoaded() {
 			return this.post !== null
+		},
+		hasPost() {
+			return this.isPostLoaded && Number(this.post[0]) !== 0
 		},
 	},
 
@@ -88,26 +88,27 @@ export default {
 
 			try {
 				const post = await contract.getPost(BigInt(this.tokenId))
-				console.log('post', post)
 				this.post = post
+
+				if (Number(this.post[0]) !== 0) {
+					// has post
+					this.$router.push({
+						query: {
+							...this.$route.query,
+							tokenId: this.tokenId,
+						},
+					})
+					// open modal
+					document.getElementById('openTextPreviewModal').click()
+				}
 			} catch (e) {
 				console.error(e)
-				// this.toast({
-				// 	title: 'Error',
-				// 	message: 'Failed to load text preview',
-				// 	type: TYPE.ERROR,
-				// })
+				this.toast('Error: Failed to load text preview', {
+					type: 'error',
+				})
+			} finally {
+				this.waiting = false
 			}
-
-			this.waiting = false
-		},
-		onClickOpenModal() {
-			this.$router.push({
-				query: {
-					...this.$route.query,
-					tokenId: this.tokenId,
-				},
-			})
 		},
 	},
 
