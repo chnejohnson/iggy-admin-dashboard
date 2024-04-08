@@ -43,6 +43,54 @@
 				</div>
 				<!-- END Select network -->
 
+				<!-- Select contract -->
+				<div class="dropdown-center mt-4 d-grid gap-2">
+					<button
+						v-if="isActivated"
+						class="btn btn-dark dropdown-toggle"
+						type="button"
+						data-bs-toggle="dropdown"
+						aria-expanded="false"
+					>
+						{{ selectedContractName }}
+					</button>
+
+					<div class="dropdown-menu p-2">
+						<div class="mb-3" v-for="(project, index) in getProjects()" :key="project.name">
+							<li>
+								<h6 class="dropdown-header">{{ project.name }}</h6>
+							</li>
+							<li><h6 class="dropdown-header">Minted Posts</h6></li>
+							<li>
+								<button @click="selectedContractName = 'IggyPostMinter'" class="dropdown-item">
+									Post Minter (IggyPostMinter)
+								</button>
+							</li>
+							<li>
+								<button @click="selectedContractName = 'IggyPostNft1155'" class="dropdown-item">
+									Post NFT (IggyPostNft1155)
+								</button>
+							</li>
+							<li><hr class="dropdown-divider" /></li>
+
+							<li><h6 class="dropdown-header">NFT Launchpad</h6></li>
+							<li>
+								<button @click="selectedContractName = 'IggyLaunchpad721Bonding'" class="dropdown-item">
+									NFT Launchpad (IggyLaunchpad721Bonding)
+								</button>
+							</li>
+							<li>
+								<button @click="selectedContractName = 'NftDirectory'" class="dropdown-item">
+									NFT Directory (NftDirectory)
+								</button>
+							</li>
+
+							<li v-if="index !== getProjects().length - 1"><hr class="dropdown-divider" /></li>
+						</div>
+					</div>
+				</div>
+				<!-- END Select contract -->
+
 				<!-- Contract Address Input -->
 				<div class="mt-4">
 					<input
@@ -184,6 +232,8 @@ import NftDirectory from '../components/nft-launchpad/NftDirectory.vue'
 
 import useChainHelpers from '../composables/useChainHelpers'
 import useDomainHelpers from '../composables/useDomainHelpers'
+import useContractHelpers from '../composables/useContractHelpers'
+
 import { ethers } from 'ethers'
 import { useEthers } from 'vue-dapp'
 import { useToast, TYPE } from 'vue-toastification'
@@ -382,6 +432,7 @@ export default {
 		const { getBlockExplorerBaseUrl, getChainName, getSupportedChains, switchOrAddChain } = useChainHelpers()
 		const toast = useToast()
 		const { getDomainHolder } = useDomainHelpers()
+		const { getProjects } = useContractHelpers()
 
 		return {
 			address,
@@ -395,6 +446,7 @@ export default {
 			signer,
 			switchOrAddChain,
 			toast,
+			getProjects,
 		}
 	},
 }
