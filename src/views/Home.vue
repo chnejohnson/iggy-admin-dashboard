@@ -43,54 +43,6 @@
 				</div>
 				<!-- END Select network -->
 
-				<!-- Select contract -->
-				<div class="dropdown-center mt-4 d-grid gap-2">
-					<button
-						v-if="isActivated"
-						class="btn btn-dark dropdown-toggle"
-						type="button"
-						data-bs-toggle="dropdown"
-						aria-expanded="false"
-					>
-						{{ selectedContractName }}
-					</button>
-
-					<div class="dropdown-menu p-2">
-						<div class="mb-3" v-for="(project, index) in getProjects()" :key="project.name">
-							<li>
-								<h6 class="dropdown-header">{{ project.name }}</h6>
-							</li>
-							<li><h6 class="dropdown-header">Minted Posts</h6></li>
-							<li>
-								<button @click="selectedContractName = 'IggyPostMinter'" class="dropdown-item">
-									Post Minter (IggyPostMinter)
-								</button>
-							</li>
-							<li>
-								<button @click="selectedContractName = 'IggyPostNft1155'" class="dropdown-item">
-									Post NFT (IggyPostNft1155)
-								</button>
-							</li>
-							<li><hr class="dropdown-divider" /></li>
-
-							<li><h6 class="dropdown-header">NFT Launchpad</h6></li>
-							<li>
-								<button @click="selectedContractName = 'IggyLaunchpad721Bonding'" class="dropdown-item">
-									NFT Launchpad (IggyLaunchpad721Bonding)
-								</button>
-							</li>
-							<li>
-								<button @click="selectedContractName = 'NftDirectory'" class="dropdown-item">
-									NFT Directory (NftDirectory)
-								</button>
-							</li>
-
-							<li v-if="index !== getProjects().length - 1"><hr class="dropdown-divider" /></li>
-						</div>
-					</div>
-				</div>
-				<!-- END Select contract -->
-
 				<!-- Contract Address Input -->
 				<div class="mt-4">
 					<input
@@ -145,22 +97,42 @@
 				</div>
 				<!-- END Select contract type -->
 
-				<!-- Load button -->
-				<button
-					v-if="isActivated && !showSwitchChain"
-					class="btn btn-lg btn-dark mt-4 mb-2"
-					:disabled="waitingData || !isContractSelected"
-					@click="loadData"
-				>
-					<span
-						v-if="waitingData"
-						class="spinner-border spinner-border-sm"
-						role="status"
-						aria-hidden="true"
-					></span>
-					Load Data
-				</button>
-				<!-- END Load button -->
+				<div class="d-flex justify-content-center gap-4">
+					<!-- Load button -->
+					<button
+						v-if="isActivated && !showSwitchChain"
+						class="btn btn-lg btn-dark mt-4 mb-2"
+						:disabled="waitingData || !isContractSelected"
+						@click="loadData"
+					>
+						<span
+							v-if="waitingData"
+							class="spinner-border spinner-border-sm"
+							role="status"
+							aria-hidden="true"
+						></span>
+						Load Data
+					</button>
+					<!-- END Load button -->
+
+					<!-- Stored Contracts button -->
+					<button
+						v-if="isActivated && !showSwitchChain && showStoredContractsBtn"
+						class="btn btn-lg btn-dark mt-4 mb-2"
+						data-bs-toggle="modal"
+						data-bs-target="#storedContractsModal"
+						:disabled="waitingData"
+					>
+						<span
+							v-if="waitingData"
+							class="spinner-border spinner-border-sm"
+							role="status"
+							aria-hidden="true"
+						></span>
+						Stored Contracts
+					</button>
+					<!-- END Stored Contracts button -->
+				</div>
 
 				<!-- Copy URL button -->
 				<button
@@ -217,6 +189,9 @@
 
 	<!-- Info -->
 	<Info v-if="contractAddress && isCurrentUserManager" />
+
+	<!-- Modal -->
+	<StoredContractsModal />
 </template>
 
 <script>
@@ -233,6 +208,8 @@ import NftDirectory from '../components/nft-launchpad/NftDirectory.vue'
 import useChainHelpers from '../composables/useChainHelpers'
 import useDomainHelpers from '../composables/useDomainHelpers'
 import useContractHelpers from '../composables/useContractHelpers'
+
+import StoredContractsModal from '../components/StoredContractsModal.vue'
 
 import { ethers } from 'ethers'
 import { useEthers } from 'vue-dapp'
@@ -265,6 +242,7 @@ export default {
 		ManagersList,
 		NftDirectory,
 		WaitingToast,
+		StoredContractsModal,
 	},
 
 	mounted() {
@@ -324,6 +302,13 @@ export default {
 			}
 
 			return false
+		},
+
+		showStoredContractsBtn() {
+			if (this.contractAddrOrDomain) {
+				return false
+			}
+			return true
 		},
 	},
 
