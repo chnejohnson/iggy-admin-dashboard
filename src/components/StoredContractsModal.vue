@@ -92,7 +92,12 @@
 				</div>
 
 				<div class="modal-footer d-flex justify-content-center">
-					<button v-if="isActivated" class="btn btn-lg btn-dark" :disabled="false">
+					<button
+						v-if="isActivated"
+						class="btn btn-lg btn-dark"
+						:disabled="!selectedProjectName || !selectedContract"
+						@click="onClickLoad"
+					>
 						<span
 							v-if="false"
 							class="spinner-border spinner-border-sm"
@@ -116,6 +121,7 @@ import PROJECTS_JSON from '../data/projects.json'
 
 export default {
 	name: 'StoredContractsModal',
+	emits: ['loadStoredContracts'],
 
 	data() {
 		return {
@@ -156,6 +162,9 @@ export default {
 				// when modal is opened
 			} else {
 				// when modal is closed
+				// clear selectedProjectName and selectedContract
+				this.selectedProjectName = null
+				this.selectedContract = null
 			}
 		},
 	},
@@ -190,8 +199,20 @@ export default {
 
 			this.selectedContract = contract
 
-			console.log('selectedProjectName', this.selectedProjectName)
-			console.log('selectedContract', this.selectedContract)
+			// console.log('selectedProjectName', this.selectedProjectName)
+			// console.log('selectedContract', this.selectedContract)
+		},
+
+		onClickLoad() {
+			if (!this.selectedProjectName) throw new Error('selectedProjectName is required')
+			if (!this.selectedContract) throw new Error('selectedContract is required')
+
+			this.$emit('loadStoredContracts', {
+				address: this.selectedContract.address,
+				type: this.selectedContract.type,
+			})
+
+			document.getElementById('closeStoredContractsModal').click()
 		},
 	},
 

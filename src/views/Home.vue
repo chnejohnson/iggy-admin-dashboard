@@ -191,7 +191,7 @@
 	<Info v-if="contractAddress && isCurrentUserManager" />
 
 	<!-- Modal -->
-	<StoredContractsModal />
+	<StoredContractsModal @loadStoredContracts="loadStoredContracts" />
 </template>
 
 <script>
@@ -409,6 +409,11 @@ export default {
 
 		removeFromManagers(index) {
 			this.managers.splice(index, 1)
+		},
+
+		loadStoredContracts({ address, type }) {
+			this.contractAddrOrDomain = address
+			this.selectedContractName = type
 		},
 	},
 
