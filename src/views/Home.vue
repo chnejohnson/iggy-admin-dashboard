@@ -234,6 +234,19 @@ export default {
 		}
 	},
 
+	watch: {
+		// Reset data when contractAddrOrDomain is empty
+		contractAddrOrDomain() {
+			if (!this.contractAddrOrDomain) {
+				this.managers = []
+				this.isCurrentUserManager = false
+				this.isCurrentUserOwner = false
+				this.contractAddress = null
+				this.contractComponent = null
+			}
+		},
+	},
+
 	components: {
 		IggyLaunchpad721Bonding,
 		IggyPostMinter,
