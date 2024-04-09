@@ -23,10 +23,10 @@
 					<p>Token ID: {{ tokenId }}</p>
 					<p>Current Image:</p>
 					<p>
-						<a :href="image" target="_blank">{{ image }}</a>
+						<a :href="image" target="_blank"><img height="150" :src="image" /></a>
 					</p>
 
-					<p>New Image:</p>
+					<p>New Image URL:</p>
 
 					<div class="row">
 						<div class="mb-2">
